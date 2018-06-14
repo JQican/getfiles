@@ -17,7 +17,7 @@ public class Constants
         Js(5, "js"),
         Xlsx(6, "xlsx"),
         Html(7, "html"),
-        Class(6, "Class"),;
+        Class(6, "class");
 
         private int key;
         private String text;
@@ -63,5 +63,5 @@ public class Constants
         {
             return text;
         }
-    };
+    }
 }
