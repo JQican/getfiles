@@ -2,11 +2,7 @@ package util;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 
@@ -22,16 +18,15 @@ public class FileUtil {
      * @param mSourcePath 处理路径
      * @param mTargetPath 目标路径
      */
-    public static boolean doFile(String selectedFileType, String sourcePath, Date changeTime, String mSourcePath, String mTargetPath) throws FileNotFoundException {
+    public static void doFile(String selectedFileType, String sourcePath, Date changeTime, String mSourcePath, String mTargetPath) {
         iteratorPath(selectedFileType, sourcePath, changeTime, mSourcePath, mTargetPath);
         deleteEmpty(mTargetPath);
-        return true;
     }
 
     /**
      * 遍历文件夹 拷贝在修改时间之后修改的文件到目标路径
      */
-    public static void iteratorPath(String selectedFileType, String sourcePath, Date changeTime, String mSourcePath, String mTargetPath)
+    private static void iteratorPath(String selectedFileType, String sourcePath, Date changeTime, String mSourcePath, String mTargetPath)
     {
         try{
             File sourceFiles = new File(sourcePath);
@@ -39,7 +34,7 @@ public class FileUtil {
             String[] types = selectedFileType.split(",");
             if (files != null && files.length > 0)
             {
-                String newFilePath = "";
+                String newFilePath;
                 for (File file : files)
                 {
                     //替换处路径为目标路径
@@ -53,9 +48,7 @@ public class FileUtil {
                         //文件格式在所选文件类型之中
                         if(isSelectedType(types, suffix)){
                             //如在目标路径存在该文件删除文件
-                            if(newFile.exists()){
-                                newFile.delete();
-                            }
+                            newFile.delete();
                             //将处理路径中文件拷贝到目标路径
                             Files.copy(file.toPath(), new File(newFilePath).toPath());
                         }
@@ -64,10 +57,12 @@ public class FileUtil {
                     {
                         //当前路径为文件夹，在目标路径中创建文件夹
                         if(!newFile.exists()) {
-                            newFile.mkdirs();
+                            boolean result = newFile.mkdirs();
+                            if(result){
+                                //遍历该文件夹
+                                iteratorPath(selectedFileType, file.getAbsolutePath(), changeTime, mSourcePath, mTargetPath);
+                            }
                         }
-                        //遍历该文件夹
-                        iteratorPath(selectedFileType, file.getAbsolutePath(), changeTime, mSourcePath, mTargetPath);
                     }
                 }
             }
@@ -87,7 +82,7 @@ public class FileUtil {
     }
 
     //删除空文件夹
-    public static void deleteEmpty(String path)
+    private static void deleteEmpty(String path)
     {
         try {
             File file = new File(path);

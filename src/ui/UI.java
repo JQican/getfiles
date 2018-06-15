@@ -6,13 +6,10 @@ import util.FileUtil;
 import util.GBC;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,14 +28,9 @@ public class UI extends JFrame {
     private JTextField targetJtf = new JTextField();
     private JTextField changeTimeJtf = new JTextField();
 
-    JFileChooser fileChooser = new JFileChooser();
+    private JFileChooser fileChooser = new JFileChooser();
 
-    private static String mSourcePath;
-    private static String mTargetPath;
     private String selectedFileType = "";
-
-    File srcFile = null;
-    File targetFile = null;
 
     public UI(){
 
@@ -47,7 +39,7 @@ public class UI extends JFrame {
 
         setVisible(true);
         setSize(600, 420);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -110,6 +102,7 @@ public class UI extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e)
         {
+            File srcFile, targetFile;
             //确定按钮
             if(e.getSource() == submitBtn){
                 submitBtnDo();
@@ -127,11 +120,20 @@ public class UI extends JFrame {
                 fileChooser.showOpenDialog(mJPanel);
                 targetFile = fileChooser.getSelectedFile();
                 //如果文件夹不存在 弹出提示框是否创建
-                if (null != targetFile && !targetFile.exists()) {
-                    targetFile.mkdirs();
-                    JOptionPane.showMessageDialog(mJPanel, "所选路径不存在，已在相应文件夹下创建。", "错误提醒",JOptionPane.WARNING_MESSAGE);
+                System.out.println(!targetFile.exists());
+                if (!targetFile.exists()) {
+                    boolean result = targetFile.mkdirs();
+                    if (!result) {
+                        JOptionPane.showMessageDialog(mJPanel, "目标路径不存在，自动创建失败，请先创建该文件夹。", "错误提醒",JOptionPane.WARNING_MESSAGE);
+                    }
+                    else{
+                        targetJtf.setText(targetFile.getAbsolutePath());
+                        JOptionPane.showMessageDialog(mJPanel, "所选路径不存在，将创建该文件夹。", "错误提醒",JOptionPane.WARNING_MESSAGE);
+                    }
                 }
-                targetJtf.setText(targetFile.getAbsolutePath());
+                else{
+                    targetJtf.setText(targetFile.getAbsolutePath());
+                }
             }
             else if(e.getSource() == changeTimeBtn){
                 JTimeChooser timeChooser = new JTimeChooser(mJPanel);
@@ -146,9 +148,9 @@ public class UI extends JFrame {
      */
     private void submitBtnDo()
     {
-        mSourcePath = sourceJtf.getText().toString();
-        mTargetPath = targetJtf.getText().toString();
-        String changeTime = changeTimeJtf.getText().toString();
+        String mSourcePath = sourceJtf.getText();
+        String mTargetPath = targetJtf.getText();
+        String changeTime = changeTimeJtf.getText();
         selectedFileType = getSelectedFileTypes();
 
         if(null == mSourcePath || "".equals(mSourcePath) || null == mTargetPath || "".equals(mTargetPath))
@@ -182,27 +184,28 @@ public class UI extends JFrame {
         }
 
         File target = new File(mTargetPath);
-        if (!target.exists() && !target.mkdirs()) {
-            System.out.println(target.getAbsolutePath());
-            target.mkdirs();
-        }
-        try {
-            boolean isFinished = false;
-            setElementDisabled(isFinished);
-            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(changeTime);
-            isFinished = FileUtil.doFile(selectedFileType, mSourcePath, date, mSourcePath, mTargetPath);
-            if(isFinished){
-                setElementDisabled(true);
+        if (!target.exists()) {
+            boolean result = target.mkdirs();
+            if(result){
+                try {
+                    setElementDisabled(false);
+                    Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(changeTime);
+                    FileUtil.doFile(selectedFileType, mSourcePath, date, mSourcePath, mTargetPath);
+                    setElementDisabled(true);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
-        } catch (Exception e1) {
-            e1.printStackTrace();
+            else{
+                JOptionPane.showMessageDialog(this, "目标路径不存在，自动创建失败，请先创建该文件夹。", "错误提醒",JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 
     /**
      * 文件格式复选框面板
      */
-    public static JPanel getCheckBox()
+    private static JPanel getCheckBox()
     {
         if (checkBoxs == null) {
             checkBoxs = new JPanel();// 创建面板对象
