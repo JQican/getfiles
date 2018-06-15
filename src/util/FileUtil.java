@@ -94,7 +94,13 @@ public class FileUtil {
                 }
                 else{
                     for (File f : files){
-                        deleteEmpty(f.getAbsolutePath());
+                        if(f.isDirectory()){
+                            deleteEmpty(f.getAbsolutePath());
+                        }
+                    }
+                    files = file.listFiles();
+                    if (null == files || files.length < 1){
+                        file.delete();
                     }
                 }
             }
