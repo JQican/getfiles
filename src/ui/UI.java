@@ -29,6 +29,8 @@ public class UI extends JFrame {
     private JTextField changeTimeJtf = new JTextField();
 
     private JFileChooser fileChooser = new JFileChooser();
+    private JTimeChooser timeChooser = null;
+    private Calendar calendar = null;
 
     private String selectedFileType = "";
 
@@ -120,7 +122,6 @@ public class UI extends JFrame {
                 fileChooser.showOpenDialog(mJPanel);
                 targetFile = fileChooser.getSelectedFile();
                 //如果文件夹不存在 弹出提示框是否创建
-                System.out.println(!targetFile.exists());
                 if (!targetFile.exists()) {
                     boolean result = targetFile.mkdirs();
                     if (!result) {
@@ -136,8 +137,11 @@ public class UI extends JFrame {
                 }
             }
             else if(e.getSource() == changeTimeBtn){
-                JTimeChooser timeChooser = new JTimeChooser(mJPanel);
-                Calendar calendar = timeChooser.showTimeDialog();
+                timeChooser = new JTimeChooser(mJPanel);
+                calendar = timeChooser.showTimeDialog();
+                timeChooser.button1.addActionListener(new ActionHandler());
+            }
+            else if(e.getActionCommand().equals("确定")){
                 changeTimeJtf.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(calendar.getTime()));
             }
         }
