@@ -6,10 +6,6 @@ import java.util.Date;
 
 public class FileUtil {
 
-    //2018-05-20 11:12:13
-    //E:\Data\11.sms\HR
-    //E:\new
-
     /**
      * 文件处理
      * @param selectedFileType 所选文件类型 如：xml,java
